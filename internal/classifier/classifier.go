@@ -115,12 +115,18 @@ func (c *Client) classifyText(ctx context.Context, body string) ([]string, error
 
 	var generateResp struct {
 		Response string `json:"response"`
+		Thinking string `json:"thinking"`
 	}
 	if err := json.Unmarshal(responseBody, &generateResp); err != nil {
 		return nil, fmt.Errorf("decode ollama envelope: %w", err)
 	}
 
-	labels, err := parseLabels(generateResp.Response)
+	modelOutput := strings.TrimSpace(generateResp.Response)
+	if modelOutput == "" {
+		modelOutput = strings.TrimSpace(generateResp.Thinking)
+	}
+
+	labels, err := parseLabels(modelOutput)
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +196,7 @@ func (w *Worker) ProcessNext(ctx context.Context) (bool, error) {
 
 func buildPrompt(body string) string {
 	return fmt.Sprintf(`You are a content warning classifier for an anonymous text board.
+If you are a reasoning model, do your thinking internally first.
 Return JSON only with this schema:
 {"labels":["violence","grief"]}
 
@@ -201,6 +208,9 @@ Rules:
 - Use "ascii-art" for ASCII art, symbol-heavy text patterns, or heavily obfuscated text that depends on layout, spacing, or character substitution to be read.
 - "spam" is not exclusive. If a post is spam and also violent, abusive, sexual, or otherwise sensitive, include both "spam" and the other applicable labels.
 - Use "spam" for obvious ads, scams, phishing, repetitive promotion, gibberish flooding, or posts that are plainly trying to clutter the board rather than say anything.
+- Your final answer must be JSON only.
+- Do not put the JSON in markdown fences.
+- Do not put any explanation before or after the JSON.
 - Do not include explanations.
 - Do not include labels not in the list.
 

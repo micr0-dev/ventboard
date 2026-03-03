@@ -133,3 +133,22 @@ func TestClientCategorizeMergesRawAndNormalizedLabels(t *testing.T) {
 		t.Fatalf("unexpected labels: %#v", labels)
 	}
 }
+
+func TestClientCategorizeFallsBackToThinkingField(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"response":"","thinking":"{\"labels\":[\"grief\"]}"}`))
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "stub-model", time.Second)
+	labels, err := client.Categorize(context.Background(), "i feel awful")
+	if err != nil {
+		t.Fatalf("Categorize returned error: %v", err)
+	}
+	if len(labels) != 1 || labels[0] != "grief" {
+		t.Fatalf("unexpected labels: %#v", labels)
+	}
+}
