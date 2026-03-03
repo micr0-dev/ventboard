@@ -61,7 +61,7 @@ go run ./cmd/server
 
 ## License
 
-GNU AGPLv3-or-later. See `LICENSE`.
+GNU AGPLv3-or-later. See [LICENSE](LICENSE)
 
 ## Test
 
