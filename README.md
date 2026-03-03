@@ -27,7 +27,7 @@ export APP_ENV=dev
 export IP_HASH_SALT='change-me'
 export FORM_TOKEN_SECRET='change-me-too'
 export OLLAMA_MODEL='gemma3:12b'
-export PUBLIC_SOURCE_URL='https://github.com/yourname/theVentBoard'
+export PUBLIC_SOURCE_URL='https://github.com/micr0-dev/theVentBoard'
 ```
 
 4. Start the server:
