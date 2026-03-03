@@ -88,7 +88,7 @@ func NewServer(db *sql.DB, postService *posts.Service, repo *posts.Repository, f
 	server.mux.Handle("POST /posts", http.HandlerFunc(server.handleCreatePost))
 	server.mux.Handle("GET /healthz", http.HandlerFunc(server.handleHealth))
 	server.mux.Handle("GET /robots.txt", http.HandlerFunc(server.handleRobots))
-	server.mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
+	server.mux.Handle("GET /static/", http.StripPrefix("/static/", withStaticCache(http.FileServer(http.FS(staticFS)))))
 
 	return server, nil
 }
@@ -246,6 +246,13 @@ func applySecurityHeaders(header http.Header) {
 	header.Set("Permissions-Policy", "accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()")
 	header.Set("Cross-Origin-Resource-Policy", "same-origin")
 	header.Set("X-Robots-Tag", "noindex, nofollow, noarchive")
+}
+
+func withStaticCache(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func buildFeedEntries(items []posts.Post) []feedEntry {

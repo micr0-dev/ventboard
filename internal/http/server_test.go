@@ -247,6 +247,22 @@ func TestSecurityHeadersPresent(t *testing.T) {
 	}
 }
 
+func TestStaticAssetsHaveCacheControl(t *testing.T) {
+	t.Parallel()
+
+	server, _, _ := newTestServer(t, stubCategorizer{})
+	req := httptest.NewRequest(http.MethodGet, "/static/site.css", nil)
+	rec := httptest.NewRecorder()
+	server.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+	if got := rec.Header().Get("Cache-Control"); got != "public, max-age=604800, immutable" {
+		t.Fatalf("unexpected Cache-Control: %q", got)
+	}
+}
+
 func TestHoneypotPostIsSilentlyDropped(t *testing.T) {
 	t.Parallel()
 
