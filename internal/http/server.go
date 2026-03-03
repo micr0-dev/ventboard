@@ -57,7 +57,7 @@ type postView struct {
 func NewServer(db *sql.DB, postService *posts.Service, repo *posts.Repository, formProtector *FormProtector, sourceURL string, feedLimit, maxChars int) (*Server, error) {
 	tmpl, err := template.New("base.html").Funcs(template.FuncMap{
 		"formatTimestamp": func(t time.Time) string {
-			return t.Local().Format("2006-01-02 15:04")
+			return t.UTC().Format("2006-01-02 15:04 UTC")
 		},
 		"joinLabels": func(labels []string) string {
 			return strings.Join(labels, ", ")
