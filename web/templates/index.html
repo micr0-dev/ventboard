@@ -36,7 +36,7 @@
           <input id="contact_url" name="{{ .Honeypot }}" type="text" tabindex="-1" autocomplete="off">
         </div>
         <label class="sr-only" for="body">Post text</label>
-        <textarea id="body" name="body" rows="9" maxlength="{{ .MaxChars }}" required></textarea>
+        <textarea id="body" name="body" rows="9" maxlength="{{ .MaxChars }}" spellcheck="true" {{ if .Autofocus }}autofocus{{ end }} required>{{ .DraftBody }}</textarea>
         <div class="composer-row">
           <p class="composer-note">Anonymous text only. Max {{ .MaxChars }} characters. New posts stay hidden until CW classification completes.</p>
           <button type="submit">POST TO BOARD</button>

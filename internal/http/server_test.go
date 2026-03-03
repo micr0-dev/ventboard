@@ -309,8 +309,34 @@ func TestFreshFormTokenRejected(t *testing.T) {
 	rec := httptest.NewRecorder()
 	server.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusSeeOther {
-		t.Fatalf("expected redirect, got %d", rec.Code)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "too fast") {
+		t.Fatal("expected draft body to be preserved on token error")
+	}
+}
+
+func TestValidationErrorPreservesDraftBody(t *testing.T) {
+	t.Parallel()
+
+	server, _, _ := newTestServer(t, stubCategorizer{})
+
+	secondForm := url.Values{}
+	secondForm.Set("body", strings.Repeat("x", 2001))
+	secondForm.Set("form_token", server.formProtector.IssueToken())
+
+	secondReq := httptest.NewRequest(http.MethodPost, "/posts", strings.NewReader(secondForm.Encode()))
+	secondReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	secondReq.RemoteAddr = "8.8.8.8:1234"
+	secondRec := httptest.NewRecorder()
+	server.ServeHTTP(secondRec, secondReq)
+
+	if secondRec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", secondRec.Code)
+	}
+	if !strings.Contains(secondRec.Body.String(), strings.Repeat("x", 2001)) {
+		t.Fatal("expected draft body to be preserved on validation error")
 	}
 }
 
