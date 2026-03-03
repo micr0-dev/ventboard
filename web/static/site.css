@@ -149,6 +149,14 @@ summary:focus {
   outline-offset: 2px;
 }
 
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
 .composer-row {
   display: flex;
   gap: 1rem;
@@ -272,11 +280,6 @@ button:hover {
 
 .spam-group > summary {
   cursor: pointer;
-  list-style: none;
-}
-
-.spam-group > summary::-webkit-details-marker {
-  display: none;
 }
 
 .spam-group-list {
