@@ -1,6 +1,8 @@
 @font-face {
   font-family: "Noto Sans Mono";
-  src: url("/static/fonts/NotoSansMono-Regular.ttf") format("truetype");
+  src:
+    url("/static/fonts/NotoSansMono-Regular.woff2") format("woff2"),
+    url("/static/fonts/NotoSansMono-Regular.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
