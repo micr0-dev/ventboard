@@ -1,0 +1,100 @@
+{{ define "content" }}
+<div class="board-layout">
+  <aside class="board-sidebar">
+    <header class="masthead">
+      <p class="masthead-kicker">PUBLIC TEXT BOARD / ANONYMOUS</p>
+      <h1>VENT BOARD</h1>
+      <p class="masthead-copy">You can say it here. It goes on the board. If it contains sensitive content, readers see a warning before they open it.</p>
+    </header>
+
+    <section class="panel panel-rules">
+      <h2>Board Notes</h2>
+      <p>Say what you need to say. Posts are anonymous on the page and public once they appear.</p>
+      <p>Nothing is removed just for being ugly, bleak, or hard to read. The only caveat is that sensitive content gets a warning first.</p>
+      <p>Do not mistake anonymity for impermanence. If you put it here, assume it stays. That is how public things usually work.</p>
+      <p>The server keeps a rotating hashed form of your IP to slow spam down. It is not shown on the board.</p>
+    </section>
+
+    {{ if .FlashError }}
+    <section class="panel flash flash-error" aria-live="polite">
+      <p>{{ .FlashError }}</p>
+    </section>
+    {{ end }}
+
+    {{ if .FlashNotice }}
+    <section class="panel flash flash-notice" aria-live="polite">
+      <p>{{ .FlashNotice }}</p>
+    </section>
+    {{ end }}
+
+    <section class="panel composer">
+      <h2>New Post</h2>
+      <form action="/posts" method="post">
+        <input type="hidden" name="form_token" value="{{ .FormToken }}">
+        <div class="honeypot" aria-hidden="true">
+          <label for="contact_url">Leave this blank</label>
+          <input id="contact_url" name="{{ .Honeypot }}" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <label class="sr-only" for="body">Post text</label>
+        <textarea id="body" name="body" rows="9" maxlength="{{ .MaxChars }}" required></textarea>
+        <div class="composer-row">
+          <p class="composer-note">Anonymous text only. Max {{ .MaxChars }} characters. New posts stay hidden until CW classification completes.</p>
+          <button type="submit">POST TO BOARD</button>
+        </div>
+      </form>
+    </section>
+
+    <p class="composer-subtext">{{ if .SourceURL }}<a href="{{ .SourceURL }}">Source code</a>{{ else }}Source code{{ end }} / <a href="/static/license.txt">AGPLv3</a></p>
+  </aside>
+
+  <section class="feed">
+    <h2 class="feed-title">Latest Posts</h2>
+    {{ if .FeedEntries }}
+      {{ range .FeedEntries }}
+        {{ if .SpamPosts }}
+        <details class="panel spam-group" data-count="{{ len .SpamPosts }}">
+          <summary>{{ len .SpamPosts }} spam posts collapsed</summary>
+          <div class="spam-group-list">
+            {{ range .SpamPosts }}
+            <article class="panel post post-spam">
+              <div class="post-meta">
+                <span>anon</span>
+                <span>{{ formatTimestamp .Post.CreatedAt }}</span>
+              </div>
+              {{ if .Post.CWLabels }}
+              <details class="cw-block">
+                <summary>CW: {{ joinLabels .Post.CWLabels }}</summary>
+                <p class="post-body">{{ .Post.Body }}</p>
+              </details>
+              {{ else }}
+              <p class="post-body">{{ .Post.Body }}</p>
+              {{ end }}
+            </article>
+            {{ end }}
+          </div>
+        </details>
+        {{ else }}
+        <article class="panel post{{ if .Post.IsSpam }} post-spam{{ end }}">
+          <div class="post-meta">
+            <span>anon</span>
+            <span>{{ formatTimestamp .Post.Post.CreatedAt }}</span>
+          </div>
+          {{ if .Post.Post.CWLabels }}
+          <details class="cw-block">
+            <summary>CW: {{ joinLabels .Post.Post.CWLabels }}</summary>
+            <p class="post-body">{{ .Post.Post.Body }}</p>
+          </details>
+          {{ else }}
+          <p class="post-body">{{ .Post.Post.Body }}</p>
+          {{ end }}
+        </article>
+        {{ end }}
+      {{ end }}
+    {{ else }}
+    <section class="panel empty">
+      <p>No posts yet. The board is quiet.</p>
+    </section>
+    {{ end }}
+  </section>
+</div>
+{{ end }}
