@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Noto Sans Mono";
+  src: url("/static/fonts/NotoSansMono-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --bg: #11110f;
   --paper: #191916;
@@ -22,7 +30,8 @@ html {
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 20%),
     linear-gradient(180deg, #0f0f0d 0%, #141411 48%, #0f0f0d 100%);
   color: var(--ink);
-  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-family: "Noto Sans Mono", "IBM Plex Mono", "Courier New", monospace;
+  font-weight: 500;
   line-height: 1.5;
 }
 
