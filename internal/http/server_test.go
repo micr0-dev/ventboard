@@ -208,6 +208,45 @@ func TestHealthEndpointReturnsOK(t *testing.T) {
 	}
 }
 
+func TestRobotsTxtDisallowsIndexing(t *testing.T) {
+	t.Parallel()
+
+	server, _, _ := newTestServer(t, stubCategorizer{})
+	req := httptest.NewRequest(http.MethodGet, "/robots.txt", nil)
+	rec := httptest.NewRecorder()
+	server.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+	body := rec.Body.String()
+	if !strings.Contains(body, "User-agent: *") || !strings.Contains(body, "Disallow: /") {
+		t.Fatalf("unexpected robots body: %q", body)
+	}
+}
+
+func TestSecurityHeadersPresent(t *testing.T) {
+	t.Parallel()
+
+	server, _, _ := newTestServer(t, stubCategorizer{})
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	server.ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("X-Robots-Tag"); got != "noindex, nofollow, noarchive" {
+		t.Fatalf("unexpected X-Robots-Tag: %q", got)
+	}
+	if got := rec.Header().Get("X-Content-Type-Options"); got != "nosniff" {
+		t.Fatalf("unexpected X-Content-Type-Options: %q", got)
+	}
+	if got := rec.Header().Get("X-Frame-Options"); got != "DENY" {
+		t.Fatalf("unexpected X-Frame-Options: %q", got)
+	}
+	if got := rec.Header().Get("Content-Security-Policy"); !strings.Contains(got, "default-src 'self'") {
+		t.Fatalf("unexpected CSP: %q", got)
+	}
+}
+
 func TestHoneypotPostIsSilentlyDropped(t *testing.T) {
 	t.Parallel()
 

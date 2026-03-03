@@ -87,12 +87,14 @@ func NewServer(db *sql.DB, postService *posts.Service, repo *posts.Repository, f
 	server.mux.Handle("GET /", http.HandlerFunc(server.handleIndex))
 	server.mux.Handle("POST /posts", http.HandlerFunc(server.handleCreatePost))
 	server.mux.Handle("GET /healthz", http.HandlerFunc(server.handleHealth))
+	server.mux.Handle("GET /robots.txt", http.HandlerFunc(server.handleRobots))
 	server.mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
 
 	return server, nil
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	applySecurityHeaders(w.Header())
 	s.mux.ServeHTTP(w, r)
 }
 
@@ -181,6 +183,12 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
+func (s *Server) handleRobots(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("User-agent: *\nDisallow: /\n"))
+}
+
 func readFlash(w http.ResponseWriter, r *http.Request, name string) string {
 	cookie, err := r.Cookie(name)
 	if err != nil {
@@ -228,6 +236,16 @@ func WaitForShutdown(ctx context.Context, server *http.Server, timeout time.Dura
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	return server.Shutdown(shutdownCtx)
+}
+
+func applySecurityHeaders(header http.Header) {
+	header.Set("Content-Security-Policy", "default-src 'self'; script-src 'none'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+	header.Set("Referrer-Policy", "no-referrer")
+	header.Set("X-Content-Type-Options", "nosniff")
+	header.Set("X-Frame-Options", "DENY")
+	header.Set("Permissions-Policy", "accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()")
+	header.Set("Cross-Origin-Resource-Policy", "same-origin")
+	header.Set("X-Robots-Tag", "noindex, nofollow, noarchive")
 }
 
 func buildFeedEntries(items []posts.Post) []feedEntry {
