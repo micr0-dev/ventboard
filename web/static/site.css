@@ -157,6 +157,16 @@ details > summary::-webkit-details-marker {
   display: none;
 }
 
+details > summary::before {
+  content: "+ ";
+  color: var(--accent);
+  font-weight: 700;
+}
+
+details[open] > summary::before {
+  content: "- ";
+}
+
 .composer-row {
   display: flex;
   gap: 1rem;
